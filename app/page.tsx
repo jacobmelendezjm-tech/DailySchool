@@ -352,13 +352,15 @@ function CourseCard({
       className={cn(
         "max-w-3xl rounded-2xl border p-6 shadow-xl ring-1 shadow-black/5 sm:p-8",
         light
-          ? "border-white/60 bg-white/85 text-neutral-700 ring-black/5 backdrop-blur-md [&_strong]:text-neutral-900"
-          : "bg-card text-muted-foreground ring-black/5 dark:ring-white/5 [&_strong]:text-foreground",
+          ? "border-white/60 bg-white/85 text-neutral-700 ring-black/5 backdrop-blur-md"
+          : "bg-card text-muted-foreground ring-black/5 dark:ring-white/5",
         className
       )}
     >
       <h3 className={cn("text-xl font-semibold", headingClass)}>¿De qué trata el curso?</h3>
-      <p className="mt-2 text-pretty">{intro}</p>
+      <p className={cn("mt-2 text-pretty", light ? "[&_strong]:text-neutral-900" : "[&_strong]:text-foreground")}>
+        {intro}
+      </p>
 
       <h4 className={cn("mt-6 font-semibold", headingClass)}>Qué aprenderás</h4>
       <ul className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -366,7 +368,7 @@ function CourseCard({
           <li key={lesson.title} className="flex gap-2.5 text-sm">
             <CircleCheck className="mt-0.5 size-4 shrink-0 text-blue-600" aria-hidden />
             <span>
-              <strong>{lesson.title}</strong> {lesson.text}
+              <strong className={headingClass}>{lesson.title}</strong> {lesson.text}
             </span>
           </li>
         ))}
@@ -380,8 +382,7 @@ function CourseCard({
       >
         <NoteIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>
-          {/* <b> y no <strong>, para que no herede el color de las negritas de la tarjeta. */}
-          <b className="font-semibold">{note.title}</b> {note.text}
+          <strong>{note.title}</strong> {note.text}
         </span>
       </p>
 
