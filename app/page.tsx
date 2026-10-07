@@ -1,5 +1,6 @@
 import Image from "next/image"
 
+import { BackgroundVideo } from "@/components/background-video"
 import { EnrollDialog } from "@/components/enroll-dialog"
 import { ReviewsCarousel } from "@/components/reviews-carousel"
 import { buttonVariants } from "@/components/ui/button"
@@ -27,9 +28,9 @@ import {
 } from "lucide-react"
 
 const courses = [
-  { id: "enchufe", label: "Cambiar un enchufe", short: "Enchufe", icon: Plug },
-  { id: "boton", label: "Coser un botón", short: "Botón", icon: Scissors },
-  { id: "taladro", label: "Usar un taladro", short: "Taladro", icon: Drill },
+  { id: "enchufe", label: "Cambiar un enchufe", short: "Enchufe", icon: Plug, video: "/video/enchufe.mp4" },
+  { id: "boton", label: "Coser un botón", short: "Botón", icon: Scissors, video: "/video/coser.mp4" },
+  { id: "taladro", label: "Usar un taladro", short: "Taladro", icon: Drill, video: "/video/taladro.mp4" },
   { id: "cocina", label: "Cocinar cinco platos básicos", short: "Cocina", icon: CookingPot },
   { id: "factura", label: "Entender una factura", short: "Factura", icon: Receipt },
   { id: "estanteria", label: "Colgar una estantería", short: "Estantería", icon: Ruler },
@@ -511,41 +512,34 @@ export default function Page() {
           </div>
         </div>
 
-        {/* 2. Cambiar un enchufe */}
-        <section id={courses[0].id} className="relative isolate min-h-svh scroll-mt-24 overflow-hidden border-t px-6 py-20">
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-            <video
-              src="/video/enchufe.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              className="size-full object-cover"
-            />
-            <div className="absolute inset-0 bg-white/80" />
-          </div>
-          <div className="mx-auto max-w-6xl">
-            <CourseHeading course={courses[0]} className="text-neutral-900 dark:border-white/50 dark:bg-white/50 dark:ring-black/5" />
-
-            <CourseCard course={courses[0]} tone="light" className="mt-8" />
-          </div>
-        </section>
-
-        {/* 3–8. Resto de cursos */}
-        {courses.slice(1).map((course, index) => (
-          <section
-            key={course.id}
-            id={course.id}
-            className={cn("scroll-mt-24 border-t px-6 py-20", index % 2 === 0 && "bg-muted/40")}
-          >
-            {/* Alterna con el enchufe (izquierda): botón a la derecha, taladro a la izquierda… */}
-            <div className={cn("mx-auto flex max-w-6xl flex-col items-start gap-6", index % 2 === 0 && "items-end")}>
-              <CourseHeading course={course} />
-              <CourseCard course={course} className="w-full" />
-            </div>
-          </section>
-        ))}
+        {/* 2–8. Cursos: alternan izquierda y derecha. Los que tienen video lo llevan de fondo con una capa blanca al 80 %. */}
+        {courses.map((course, index) => {
+          const right = index % 2 === 1
+          return (
+            <section
+              key={course.id}
+              id={course.id}
+              className={cn(
+                "scroll-mt-24 border-t px-6 py-20",
+                course.video ? "relative isolate min-h-svh overflow-hidden" : right && "bg-muted/40"
+              )}
+            >
+              {course.video && (
+                <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+                  <BackgroundVideo src={course.video} />
+                  <div className="absolute inset-0 bg-white/80" />
+                </div>
+              )}
+              <div className={cn("mx-auto flex max-w-6xl flex-col items-start gap-8", right && "items-end")}>
+                <CourseHeading
+                  course={course}
+                  className={cn(course.video && "text-neutral-900 dark:border-white/50 dark:bg-white/50 dark:ring-black/5")}
+                />
+                <CourseCard course={course} tone={course.video ? "light" : "theme"} className="w-full" />
+              </div>
+            </section>
+          )
+        })}
 
         {/* Opiniones */}
         <section id="opiniones" className="scroll-mt-24 overflow-hidden border-t px-6 py-20">
