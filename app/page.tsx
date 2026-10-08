@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
   ArrowDown,
+  ArrowRight,
   Bike,
   ChevronDown,
   CircleCheck,
@@ -20,6 +21,7 @@ import {
   MapPin,
   MessageCircle,
   Phone,
+  Plus,
   Plug,
   Receipt,
   Ruler,
@@ -28,6 +30,8 @@ import {
   Star,
   Users,
   Wrench,
+  GraduationCap,
+  Sparkles,
   Zap,
 } from "lucide-react"
 
@@ -363,6 +367,49 @@ const pillars = [
   },
 ]
 
+// Bloque "¡Solo en DailySchool!" bajo la portada.
+const highlights = [
+  {
+    title: "Instructores profesionales",
+    description: "Te enseña alguien que se dedica a ello cada día.",
+    icon: GraduationCap,
+  },
+  {
+    title: "Herramientas reales",
+    description: "Practicas con el mismo material que usarás en casa.",
+    icon: Wrench,
+  },
+  {
+    title: "Desde cero",
+    description: "Sin conocimientos previos: empezamos por lo básico.",
+    icon: Sparkles,
+  },
+]
+
+// Preguntas frecuentes. Respuestas de ejemplo: revisar antes de publicar.
+const faqs = [
+  {
+    question: "¿Necesito conocimientos previos?",
+    answer:
+      "No. Todos los cursos empiezan desde cero y practicas desde el primer día con un instructor a tu lado.",
+  },
+  {
+    question: "¿Tengo que llevar mis propias herramientas?",
+    answer:
+      "No. En el taller trabajas con herramientas y materiales reales que ponemos a tu disposición durante la clase.",
+  },
+  {
+    question: "¿Cuántas personas hay en cada grupo?",
+    answer:
+      "Trabajamos en grupos reducidos para que el instructor pueda ayudarte en todo momento y resolver tus dudas.",
+  },
+  {
+    question: "¿Cómo me inscribo en un curso?",
+    answer:
+      "Pulsa «Inscribirme» en el curso que te interese y déjanos tus datos. Te escribiremos para confirmar la fecha y tu plaza.",
+  },
+]
+
 const averageRating = 4.8
 
 const stats = [
@@ -450,6 +497,12 @@ const contact = {
 } as const
 
 const mapQuery = encodeURIComponent(contact.address)
+const phoneHref = `tel:${contact.phone.replace(/\s/g, "")}`
+const whatsappHref = contact.socials.find(
+  (social) => social.icon === "whatsapp"
+)!.href
+// "Solicita información": abre un correo con el asunto ya escrito.
+const infoHref = `mailto:${contact.email}?subject=${encodeURIComponent("Información sobre los cursos")}`
 
 function SocialIcon({
   name,
@@ -612,7 +665,7 @@ function InfoPanel() {
 
       <div className="mt-6 grid gap-2.5">
         <a
-          href={`mailto:${contact.email}?subject=${encodeURIComponent("Información sobre los cursos")}`}
+          href={infoHref}
           className="flex h-12 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700"
         >
           Solicita información
@@ -659,11 +712,32 @@ function InfoPanel() {
 export default function Page() {
   return (
     // Empieza en modo claro; el botón luna (ThemeToggle) cambia a oscuro.
-    <div className="min-h-svh bg-background text-foreground">
+    <div className="min-h-svh bg-background pb-17 text-foreground xl:pb-0">
       {/* Franja de promoción fija arriba (h-9). El menú va justo debajo (top-13 = 36 px + 16 px). */}
-      <p className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center bg-green-600 px-4 text-sm font-semibold text-white">
-        50% de descuento
-      </p>
+      <div className="fixed inset-x-0 top-0 z-50 bg-green-600 px-4 text-sm font-semibold text-white">
+        <div className="mx-auto flex h-9 max-w-6xl items-center justify-center sm:justify-between">
+          <span className="hidden w-72 sm:block" aria-hidden />
+          <p>50% de descuento</p>
+          <div className="hidden w-72 items-center justify-end gap-5 sm:flex">
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
+              <MessageCircle className="size-4" aria-hidden />
+              WhatsApp
+            </a>
+            <a
+              href={phoneHref}
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
+              <Phone className="size-4" aria-hidden />
+              {contact.phone}
+            </a>
+          </div>
+        </div>
+      </div>
 
       <header className="fixed inset-x-0 top-13 z-50 px-4">
         <nav className="mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-full border border-white/30 bg-white/40 py-2 pr-3 pl-6 shadow-lg ring-1 shadow-black/5 ring-black/5 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:ring-white/5">
@@ -696,6 +770,12 @@ export default function Page() {
               Sobre nosotros
             </a>
             <ThemeToggle />
+            <a
+              href={infoHref}
+              className="ml-1 hidden h-9 items-center rounded-full bg-blue-600 px-4 text-xs font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700 sm:inline-flex"
+            >
+              Solicita información
+            </a>
           </div>
         </nav>
       </header>
@@ -763,6 +843,32 @@ export default function Page() {
               ¡Aprende haciendo!
             </p>
           </div>
+
+          {/* ¡Solo en DailySchool!: tres ventajas en una franja. */}
+          <Reveal
+            from="up"
+            className="mx-auto mt-14 grid max-w-6xl items-center gap-6 rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8 lg:grid-cols-[auto_1fr]"
+          >
+            <p className="text-2xl font-semibold tracking-tight text-blue-700 lg:pr-8 dark:text-blue-300">
+              ¡Solo en
+              <br className="hidden lg:block" /> DailySchool!
+            </p>
+            <ul className="grid gap-5 sm:grid-cols-3 lg:border-l lg:pl-8">
+              {highlights.map(({ title, description, icon: Icon }) => (
+                <li key={title} className="flex gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <span>
+                    <span className="block font-semibold">{title}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {description}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
 
           {/* Contenido centrado: se reparte entre entradas por la izquierda y por la derecha. */}
           <div className="mx-auto mt-16 max-w-3xl text-center">
@@ -878,6 +984,51 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Catálogo: una tarjeta por curso que lleva a su sección. */}
+        <section id="cursos" className="scroll-mt-32 px-6 pb-20">
+          <div className="mx-auto max-w-6xl">
+            <Reveal from="left" className="max-w-2xl">
+              <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                Conoce nuestros cursos
+              </h2>
+              <p className="mt-3 text-pretty text-muted-foreground">
+                Elige lo que quieres aprender a hacer por ti mismo. Cada curso
+                es un taller práctico con un instructor y grupos reducidos.
+              </p>
+            </Reveal>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {courses.map(({ id, label, icon: Icon }, index) => (
+                <Reveal
+                  as="li"
+                  key={id}
+                  from={index % 2 === 0 ? "left" : "right"}
+                  delay={index * 60}
+                >
+                  <a
+                    href={`#${id}`}
+                    className="group flex h-full flex-col rounded-2xl border bg-card p-5 text-card-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-600/40 hover:shadow-md"
+                  >
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-blue-600 text-white">
+                      <Icon className="size-5" aria-hidden />
+                    </span>
+                    <span className="mt-4 font-semibold">{label}</span>
+                    <span className="mt-1 text-sm text-muted-foreground">
+                      {courseDetails[id].lessons.length} habilidades prácticas
+                    </span>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      Ver curso
+                      <ArrowRight
+                        className="size-4 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden
+                      />
+                    </span>
+                  </a>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         {/* Desde el primer curso hasta el final: contenido a la izquierda y, en pantallas
               grandes, el panel de información a la derecha, fijo al hacer scroll. */}
         <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -992,6 +1143,42 @@ export default function Page() {
                     )
                   })}
                 </ReviewsCarousel>
+              </div>
+            </section>
+
+            {/* Preguntas frecuentes: desplegables nativos (<details>), funcionan sin JavaScript. */}
+            <section id="preguntas" className="scroll-mt-32 px-6 py-20">
+              <div className="mx-auto max-w-3xl">
+                <Reveal from="left">
+                  <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                    Dudas
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                    Preguntas frecuentes
+                  </h2>
+                </Reveal>
+                <div className="mt-8 grid gap-3">
+                  {faqs.map((faq, index) => (
+                    <Reveal
+                      key={faq.question}
+                      from={index % 2 === 0 ? "left" : "right"}
+                      delay={index * 80}
+                    >
+                      <details className="group rounded-2xl border bg-card text-card-foreground shadow-sm open:shadow-md">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium [&::-webkit-details-marker]:hidden">
+                          {faq.question}
+                          <Plus
+                            className="size-5 shrink-0 text-blue-600 transition-transform group-open:rotate-45"
+                            aria-hidden
+                          />
+                        </summary>
+                        <p className="px-5 pb-5 text-pretty text-muted-foreground">
+                          {faq.answer}
+                        </p>
+                      </details>
+                    </Reveal>
+                  ))}
+                </div>
               </div>
             </section>
 
@@ -1138,6 +1325,76 @@ export default function Page() {
           </aside>
         </div>
       </main>
+
+      <footer className="border-t bg-muted/40 px-6 py-12">
+        <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-[2fr_1fr_1fr]">
+          <div>
+            <p className="text-lg font-semibold">DailySchool</p>
+            <p className="mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
+              Cursos breves, prácticos y presenciales para aprender lo que
+              siempre necesitaste saber.
+            </p>
+          </div>
+          <nav
+            aria-label="Pie de página"
+            className="grid content-start gap-2 text-sm"
+          >
+            <a
+              href="#cursos"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Cursos
+            </a>
+            <a
+              href="#preguntas"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Preguntas frecuentes
+            </a>
+            <a
+              href="#contacto"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Contacto
+            </a>
+          </nav>
+          <div className="grid content-start gap-2 text-sm">
+            <a
+              href={phoneHref}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {contact.phone}
+            </a>
+            <a
+              href={`mailto:${contact.email}`}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {contact.email}
+            </a>
+            <p className="text-muted-foreground">{contact.address}</p>
+          </div>
+        </div>
+        <p className="mx-auto mt-10 max-w-6xl border-t pt-6 text-sm text-muted-foreground">
+          © {new Date().getFullYear()} DailySchool · Escuela día a día
+        </p>
+      </footer>
+
+      {/* Barra fija abajo en móvil y tablet (en escritorio ya está el panel lateral). */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t bg-background/90 p-3 backdrop-blur-xl xl:hidden">
+        <a
+          href={infoHref}
+          className="flex h-11 flex-1 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase"
+        >
+          Solicita información
+        </a>
+        <a
+          href={phoneHref}
+          aria-label={`Llamar al ${contact.phone}`}
+          className="flex size-11 items-center justify-center rounded-full border border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300"
+        >
+          <Phone className="size-5" aria-hidden />
+        </a>
+      </div>
     </div>
   )
 }
