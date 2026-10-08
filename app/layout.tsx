@@ -26,7 +26,8 @@ export default function RootLayout({
     >
       <body>
         <SmoothScroll />
-        <ThemeProvider>{children}</ThemeProvider>
+        {/* Empieza en modo claro; el botón luna del menú cambia a modo oscuro (y se recuerda). */}
+        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
       </body>
     </html>
   )

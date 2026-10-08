@@ -22,7 +22,8 @@ export function ReviewsCarousel({ children }: { children: React.ReactNode }) {
         ref={trackRef}
         // Los gestos horizontales sobre el carrusel usan el scroll nativo, no el de Lenis.
         data-lenis-prevent-horizontal
-        className="-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // Mismo ancho que el contenido (sin -mx-6) para que los bordes no corten tarjetas.
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </ul>
