@@ -974,7 +974,7 @@ export default function Page() {
               />
               <Reveal
                 from="left"
-                className="relative max-w-xl bg-blue-700 p-6 text-white shadow-2xl sm:p-9"
+                className="relative max-w-xl bg-blue-700/50 p-6 text-white shadow-2xl sm:p-9"
               >
                 <p className="text-xs font-medium tracking-widest text-white/75 uppercase">
                   Habilidades funcionales
