@@ -198,6 +198,44 @@
   }
 }
 
+/* Borde brillante ("shine border") del plan más elegido: un degradado animado que
+   solo se ve en el contorno gracias a la máscara (se recorta el interior). */
+.shine-border {
+  padding: 3px;
+  background-image: radial-gradient(
+    transparent,
+    transparent,
+    #ffb900,
+    #ffffff,
+    #93c5fd,
+    transparent,
+    transparent
+  );
+  background-size: 300% 300%;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: shine 8s linear infinite;
+}
+@keyframes shine {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shine-border {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
 /* Bloquea el scroll de la página mientras hay una ventana abierta. */
 html:has(dialog[open]) {
   overflow: hidden;

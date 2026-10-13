@@ -1317,6 +1317,12 @@ export default function Page() {
                     )}
                   >
                     {plan.featured && (
+                      <span
+                        aria-hidden
+                        className="shine-border pointer-events-none absolute -inset-px rounded-[inherit]"
+                      />
+                    )}
+                    {plan.featured && (
                       <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3.5 py-1 text-xs font-semibold whitespace-nowrap text-blue-950 shadow-md">
                         El más elegido
                       </span>
