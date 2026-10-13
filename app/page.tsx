@@ -682,7 +682,7 @@ function CourseCard({
   return (
     <div
       className={cn(
-        "max-w-3xl overflow-hidden rounded-2xl border bg-card text-muted-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 dark:ring-white/5",
+        "max-w-3xl overflow-hidden rounded-2xl border bg-card text-muted-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 transition-shadow duration-300 hover:shadow-2xl hover:shadow-blue-600/15 dark:ring-white/5",
         className
       )}
     >
@@ -726,9 +726,12 @@ function CourseCard({
         </h4>
         <ul className="mt-3 grid gap-3 sm:grid-cols-2">
           {lessons.map((lesson) => (
-            <li key={lesson.title} className="flex gap-2.5 text-sm">
+            <li
+              key={lesson.title}
+              className="group/lesson -mx-2 flex gap-2.5 rounded-lg px-2 py-1 text-sm transition-colors hover:bg-blue-50 hover:text-foreground dark:hover:bg-blue-950/40"
+            >
               <CircleCheck
-                className="mt-0.5 size-4 shrink-0 text-blue-600"
+                className="mt-0.5 size-4 shrink-0 text-blue-600 transition-transform group-hover/lesson:scale-125"
                 aria-hidden
               />
               <span>
@@ -739,7 +742,7 @@ function CourseCard({
           ))}
         </ul>
 
-        <p className="mt-6 flex gap-2.5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900">
+        <p className="mt-6 flex gap-2.5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 transition-shadow hover:shadow-md hover:ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900">
           <NoteIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
             <strong>{note.title}</strong> {note.text}
@@ -765,7 +768,7 @@ function CourseHeading({
   return (
     <h2
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/50 px-5 py-2.5 text-lg font-semibold text-foreground shadow-lg ring-1 shadow-black/5 ring-black/5 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/5 dark:ring-white/5",
+        "inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/50 px-5 py-2.5 text-lg font-semibold text-foreground shadow-lg ring-1 shadow-black/5 ring-black/5 backdrop-blur-xl backdrop-saturate-150 transition duration-300 hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:ring-white/5",
         className
       )}
     >
@@ -779,7 +782,7 @@ function CourseHeading({
 // al final de la página en móvil y tablet.
 function InfoPanel() {
   return (
-    <div className="rounded-2xl border bg-card p-6 text-card-foreground shadow-xl ring-1 shadow-black/5 ring-black/5">
+    <div className="rounded-2xl border bg-card p-6 text-card-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 transition-shadow duration-300 hover:shadow-2xl hover:shadow-blue-600/15">
       <h2 className="text-3xl font-medium tracking-tight text-balance">
         Infórmate gratis ahora
       </h2>
@@ -821,9 +824,12 @@ function InfoPanel() {
           `${stats[0].value} alumnos formados`,
           `${averageRating.toLocaleString("es-ES")}/5 de valoración media`,
         ].map((item) => (
-          <li key={item} className="flex gap-3">
+          <li
+            key={item}
+            className="group flex gap-3 transition-colors hover:text-foreground"
+          >
             <CircleCheck
-              className="mt-0.5 size-5 shrink-0 text-blue-600"
+              className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
               aria-hidden
             />
             {item}
@@ -839,7 +845,7 @@ function CeoBubble() {
   // Se comprueba en cada render para que la foto aparezca en cuanto se añada.
   const ceoHasPhoto = existsSync(join(process.cwd(), "public", ceo.photo))
   return (
-    <figure className="flex items-center gap-4 rounded-full border bg-card py-2 pr-6 pl-2 text-card-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 dark:ring-white/5">
+    <figure className="flex items-center gap-4 rounded-full border bg-card py-2 pr-6 pl-2 text-card-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-2xl dark:ring-white/5">
       <span className="relative shrink-0 rounded-full bg-linear-to-br from-blue-600 via-blue-400 to-amber-400 p-[3px] shadow-lg shadow-blue-600/20">
         {ceoHasPhoto ? (
           <Image
@@ -974,7 +980,7 @@ export default function Page() {
               />
               <Reveal
                 from="left"
-                className="relative max-w-xl bg-blue-700/50 p-6 text-white shadow-2xl sm:p-9"
+                className="hover-lift relative max-w-xl rounded-xl bg-blue-700/70 p-6 text-white shadow-2xl hover:bg-blue-700/80 sm:p-9"
               >
                 <p className="text-xs font-medium tracking-widest text-white/75 uppercase">
                   Habilidades funcionales
@@ -1011,7 +1017,7 @@ export default function Page() {
               </Reveal>
             </div>
             {/* Etiqueta en la esquina inferior derecha de la foto. */}
-            <p className="absolute right-4 -bottom-5 flex items-center gap-2 bg-amber-400 px-4 py-2.5 text-sm font-semibold text-blue-900 shadow-lg sm:right-8">
+            <p className="absolute right-4 -bottom-5 flex items-center gap-2 bg-amber-400 px-4 py-2.5 text-sm font-semibold text-blue-900 shadow-lg transition duration-300 hover:scale-105 hover:-rotate-2 sm:right-8">
               <Zap className="size-4" aria-hidden />
               ¡Aprende haciendo!
             </p>
@@ -1020,7 +1026,7 @@ export default function Page() {
           {/* ¡Solo en DailySchool!: tres ventajas en una franja. */}
           <Reveal
             from="up"
-            className="mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8 lg:grid-cols-[auto_1fr]"
+            className="hover-lift mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-2xl border bg-card p-6 text-card-foreground shadow-sm hover:shadow-lg sm:p-8 lg:grid-cols-[auto_1fr]"
           >
             <p className="text-2xl font-semibold tracking-tight text-blue-700 lg:pr-8 dark:text-blue-300">
               ¡Solo en
@@ -1028,8 +1034,8 @@ export default function Page() {
             </p>
             <ul className="grid gap-5 sm:grid-cols-3 lg:border-l lg:pl-8">
               {highlights.map(({ title, description, icon: Icon }) => (
-                <li key={title} className="flex gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                <li key={title} className="group flex gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 transition duration-300 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-950 dark:text-blue-300 dark:group-hover:bg-blue-600 dark:group-hover:text-white">
                     <Icon className="size-5" aria-hidden />
                   </span>
                   <span>
@@ -1084,13 +1090,16 @@ export default function Page() {
                   from="up"
                   delay={index * 120}
                   className={cn(
-                    "flex flex-col items-center",
+                    "group hover-lift flex flex-col items-center rounded-2xl p-3 hover:scale-[1.04]",
                     index === 0 && "sm:[--reveal-x:-4rem] sm:[--reveal-y:0]",
                     index === pillars.length - 1 &&
                       "sm:[--reveal-x:4rem] sm:[--reveal-y:0]"
                   )}
                 >
-                  <Icon className="size-5" aria-hidden />
+                  <Icon
+                    className="size-5 transition-colors group-hover:text-blue-600"
+                    aria-hidden
+                  />
                   <dt className="mt-2 font-medium">{title}</dt>
                   <dd className="mt-1 text-sm text-muted-foreground">
                     {description}
@@ -1152,7 +1161,7 @@ export default function Page() {
 
         {/* Cifras */}
         <div className="px-4 pb-14 sm:pb-20">
-          <div className="mx-auto max-w-5xl rounded-2xl border bg-card p-4 text-card-foreground shadow-lg shadow-black/5 sm:p-6">
+          <div className="mx-auto max-w-5xl rounded-2xl border bg-card p-4 text-card-foreground shadow-lg shadow-black/5 transition-shadow duration-300 hover:shadow-xl sm:p-6">
             <div className="mx-auto max-w-2xl px-2 pt-4 pb-8 text-center">
               <Reveal from="left">
                 <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
@@ -1175,7 +1184,7 @@ export default function Page() {
                   from={index % 2 === 0 ? "left" : "right"}
                   delay={index * 100}
                   className={cn(
-                    "flex flex-col-reverse items-center justify-center rounded-xl bg-blue-600 px-4 py-7 text-center text-white",
+                    "hover-lift flex flex-col-reverse items-center justify-center rounded-xl bg-blue-600 px-4 py-7 text-center text-white hover:scale-[1.04] hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30",
                     index < stats.length / 2
                       ? "lg:[--reveal-x:-4rem]"
                       : "lg:[--reveal-x:4rem]"
@@ -1310,18 +1319,12 @@ export default function Page() {
                     from={index === 0 ? "left" : index === 2 ? "right" : "up"}
                     delay={index * 100}
                     className={cn(
-                      "relative flex flex-col rounded-3xl border p-6 shadow-sm sm:p-7",
+                      "hover-lift relative flex flex-col rounded-3xl border p-6 shadow-sm hover:scale-[1.02] hover:shadow-xl sm:p-7",
                       plan.featured
-                        ? "border-blue-700 bg-blue-700 text-white shadow-2xl shadow-blue-700/25 md:-my-3 md:py-10"
-                        : "bg-card text-card-foreground"
+                        ? "border-blue-700 bg-blue-700 text-white shadow-2xl shadow-blue-700/25 hover:shadow-blue-700/40 md:-my-3 md:py-10"
+                        : "bg-card text-card-foreground hover:border-blue-600/40"
                     )}
                   >
-                    {plan.featured && (
-                      <span
-                        aria-hidden
-                        className="shine-border pointer-events-none absolute -inset-px rounded-[inherit]"
-                      />
-                    )}
                     {plan.featured && (
                       <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3.5 py-1 text-xs font-semibold whitespace-nowrap text-blue-950 shadow-md">
                         El más elegido
@@ -1482,7 +1485,7 @@ export default function Page() {
                           delay={index * 100}
                           key={review.name}
                           // Anchos exactos para que siempre se vean tarjetas completas: 1 en móvil, 2 en tablet y 3 en escritorio (gap-4 = 1rem).
-                          className="flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)] xl:w-[calc((100%-1rem)/2)]"
+                          className="hover-lift flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm hover:border-blue-600/40 hover:shadow-md sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)] xl:w-[calc((100%-1rem)/2)]"
                         >
                           <Stars rating={review.rating} />
                           <blockquote className="mt-4 flex-1 text-pretty">
@@ -1540,8 +1543,8 @@ export default function Page() {
                         from={index % 2 === 0 ? "left" : "right"}
                         delay={index * 80}
                       >
-                        <details className="group rounded-2xl border bg-card text-card-foreground shadow-sm open:shadow-md">
-                          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium [&::-webkit-details-marker]:hidden">
+                        <details className="group rounded-2xl border bg-card text-card-foreground shadow-sm transition-[box-shadow,border-color] open:shadow-md hover:border-blue-600/40 hover:shadow-md">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium transition-colors hover:text-blue-700 dark:hover:text-blue-300 [&::-webkit-details-marker]:hidden">
                             {faq.question}
                             <Plus
                               className="size-5 shrink-0 text-blue-600 transition-transform group-open:rotate-45"
@@ -1574,9 +1577,9 @@ export default function Page() {
                     </p>
 
                     <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-                      <div className="flex gap-3">
+                      <div className="group -m-2 flex gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
                         <MapPin
-                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
                           aria-hidden
                         />
                         <div>
@@ -1595,9 +1598,9 @@ export default function Page() {
                           </dd>
                         </div>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="group -m-2 flex gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
                         <Clock
-                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
                           aria-hidden
                         />
                         <div>
@@ -1612,9 +1615,9 @@ export default function Page() {
                           ))}
                         </div>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="group -m-2 flex gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
                         <Phone
-                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
                           aria-hidden
                         />
                         <div>
@@ -1629,9 +1632,9 @@ export default function Page() {
                           </dd>
                         </div>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="group -m-2 flex gap-3 rounded-xl p-2 transition-colors hover:bg-muted/60">
                         <Mail
-                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
                           aria-hidden
                         />
                         <div>

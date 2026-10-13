@@ -180,6 +180,24 @@
     opacity: 1;
     translate: 0 0;
   }
+  /* Tarjetas que además reaccionan al ratón (crecen y ganan sombra): se mantienen las
+     transiciones de la entrada y se añaden las del hover, más rápidas y sin retardo. */
+  .hover-lift {
+    transition:
+      scale 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease,
+      background-color 0.3s ease;
+  }
+  .reveal.hover-lift {
+    transition:
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+      translate 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+      scale 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease,
+      background-color 0.3s ease;
+  }
   @media (prefers-reduced-motion: reduce) {
     .reveal {
       translate: none;
@@ -195,44 +213,6 @@
   }
   to {
     transform: scaleX(1);
-  }
-}
-
-/* Borde brillante ("shine border") del plan más elegido: un degradado animado que
-   solo se ve en el contorno gracias a la máscara (se recorta el interior). */
-.shine-border {
-  padding: 3px;
-  background-image: radial-gradient(
-    transparent,
-    transparent,
-    #ffb900,
-    #ffffff,
-    #93c5fd,
-    transparent,
-    transparent
-  );
-  background-size: 300% 300%;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: shine 8s linear infinite;
-}
-@keyframes shine {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shine-border {
-    animation: none;
-    background-position: 50% 50%;
   }
 }
 

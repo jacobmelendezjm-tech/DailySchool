@@ -75,7 +75,7 @@ export function PromoVideo({
   return (
     <div
       className={cn(
-        "group relative aspect-video overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 shadow-black/10 ring-black/5 dark:ring-white/10",
+        "group relative aspect-video overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 shadow-black/10 ring-black/5 transition-shadow duration-300 hover:shadow-blue-900/30 dark:ring-white/10",
         className
       )}
     >
