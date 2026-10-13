@@ -47,7 +47,8 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      // Al autocompletar un formulario, Chrome lanza "keydown" sin `key`.
+      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
         return
       }
 
