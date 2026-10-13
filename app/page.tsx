@@ -583,12 +583,12 @@ const contact = {
   ],
 } as const
 
-// CEO en el pie de página. La foto va en public/fotos/ceo.jpg; mientras no exista,
-// la burbuja muestra las iniciales.
+// CEO en el pie de página. La burbuja usa un recorte cuadrado de la cara (ceo-avatar.jpg,
+// sacado de la foto original public/fotos/ceo.jpg); si no existe, muestra las iniciales.
 const ceo = {
   name: "Jacob Meléndez",
   role: "CEO y fundador",
-  photo: "/fotos/ceo.jpg",
+  photo: "/fotos/ceo-avatar.jpg",
 }
 
 const mapQuery = encodeURIComponent(contact.address)
@@ -847,7 +847,7 @@ function CeoBubble() {
             alt={`${ceo.name}, ${ceo.role} de DailySchool`}
             width={128}
             height={128}
-            className="size-16 rounded-full border-2 border-card object-cover object-top"
+            className="size-16 rounded-full border-2 border-card object-cover"
           />
         ) : (
           <span

@@ -129,7 +129,7 @@ components/
   reveal.tsx            Animación de entrada al hacer scroll
   …
 public/
-  fotos/                Fotos de los cursos (y ceo.jpg, la foto del CEO)
+  fotos/                Fotos de los cursos y del CEO (ceo.jpg y su recorte ceo-avatar.jpg)
   video/                Vídeo de presentación y su imagen de portada
 ```
 
@@ -152,7 +152,6 @@ Al ser un cliente ficticio, algunos contenidos son de ejemplo:
 
 - **Formulario:** valida los datos, pero aún no los guarda ni los envía; solo se registran en el servidor. Para producción habría que conectarlo a un servicio de correo (p. ej. Resend) o a una hoja de cálculo.
 - **Datos de contacto** (`hola@example.com`, `+34 600 000 000`), **opiniones** y **cifras**: son ilustrativos.
-- **Foto del CEO:** añadir `public/fotos/ceo.jpg` (mientras no exista se muestran las iniciales).
 - **Vídeo:** entre los segundos 2 y 4,5 aparece un texto sobreimpreso con errores ortográficos; conviene volver a exportarlo.
 
 ---
