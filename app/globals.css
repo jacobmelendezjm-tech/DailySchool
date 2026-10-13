@@ -188,6 +188,16 @@
   }
 }
 
+/* Barra de progreso del pase de fotos de la portada (components/hero-slideshow.tsx). */
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* Bloquea el scroll de la página mientras hay una ventana abierta. */
 html:has(dialog[open]) {
   overflow: hidden;

@@ -1,7 +1,12 @@
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import Image from "next/image"
 
 import { CoursesMenu } from "@/components/courses-menu"
 import { EnrollDialog } from "@/components/enroll-dialog"
+import { Logo } from "@/components/logo"
+import { HeroSlideshow } from "@/components/hero-slideshow"
+import { PromoVideo } from "@/components/promo-video"
 import { ReviewsCarousel } from "@/components/reviews-carousel"
 import { Reveal } from "@/components/reveal"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -35,33 +40,63 @@ import {
   Zap,
 } from "lucide-react"
 
+// Las fotos están en public/fotos.
 const courses = [
-  { id: "enchufe", label: "Cambiar un enchufe", short: "Enchufe", icon: Plug },
-  { id: "boton", label: "Coser un botón", short: "Botón", icon: Scissors },
-  { id: "taladro", label: "Usar un taladro", short: "Taladro", icon: Drill },
+  {
+    id: "enchufe",
+    label: "Cambiar un enchufe",
+    short: "Enchufe",
+    icon: Plug,
+    photo: "/fotos/enchufe.jpg",
+    alt: "Hombre sonriente conectando los cables de un enchufe con un destornillador",
+  },
+  {
+    id: "boton",
+    label: "Coser un botón",
+    short: "Botón",
+    icon: Scissors,
+    photo: "/fotos/coser boton.jpg",
+    alt: "Mujer cosiendo un botón en una camisa, con un costurero sobre la mesa",
+  },
+  {
+    id: "taladro",
+    label: "Usar un taladro",
+    short: "Taladro",
+    icon: Drill,
+    photo: "/fotos/taladro.jpg",
+    alt: "Mujer montando una estantería de madera con un taladro atornillador",
+  },
   {
     id: "cocina",
     label: "Cocinar cinco platos básicos",
     short: "Cocina",
     icon: CookingPot,
+    photo: "/fotos/cocinar platos.jpg",
+    alt: "Mujer con delantal cocinando en una sartén, con verduras cortadas en la encimera",
   },
   {
     id: "factura",
     label: "Entender una factura",
     short: "Factura",
     icon: Receipt,
+    photo: "/fotos/entender un libro.jpg",
+    alt: "Hombre sentado en un sillón repasando un documento con un bolígrafo en la mano",
   },
   {
     id: "estanteria",
     label: "Colgar una estantería",
     short: "Estantería",
     icon: Ruler,
+    photo: "/fotos/estanteria.jpg",
+    alt: "Hombre nivelando una balda de madera en la pared",
   },
   {
     id: "bicicleta",
     label: "Arreglar una bicicleta",
     short: "Bicicleta",
     icon: Bike,
+    photo: "/fotos/bicicleta.jpg",
+    alt: "Hombre ajustando la rueda trasera de una bicicleta puesta del revés",
   },
 ]
 
@@ -410,6 +445,58 @@ const faqs = [
   },
 ]
 
+// Precios: oferta de lanzamiento con el 50 % del banner superior.
+const discount = 0.5
+const plans = [
+  {
+    name: "Un curso",
+    description: "Empieza por la habilidad que más te urge.",
+    courses: 1,
+    price: 60,
+    features: [
+      "1 curso a elegir entre los 7",
+      "Herramientas y materiales incluidos",
+      "Instructor profesional",
+      "Grupo reducido",
+    ],
+  },
+  {
+    name: "Pack 3 cursos",
+    description: "Para ganar autonomía en casa de verdad.",
+    courses: 3,
+    price: 150,
+    featured: true,
+    features: [
+      "3 cursos a elegir",
+      "Herramientas y materiales incluidos",
+      "Instructor profesional",
+      "Grupo reducido",
+      "Prioridad al elegir fecha",
+    ],
+  },
+  {
+    name: "Todos los cursos",
+    description: "Las 7 habilidades, de principio a fin.",
+    courses: courses.length,
+    price: 300,
+    features: [
+      `Los ${courses.length} cursos`,
+      "Herramientas y materiales incluidos",
+      "Instructor profesional",
+      "Grupo reducido",
+      "Prioridad al elegir fecha",
+      "Repite una sesión gratis si lo necesitas",
+    ],
+  },
+]
+
+const euros = (value: number) =>
+  value.toLocaleString("es-ES", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+  })
+
 const averageRating = 4.8
 
 const stats = [
@@ -496,13 +583,19 @@ const contact = {
   ],
 } as const
 
+// CEO en el pie de página. La foto va en public/fotos/ceo.jpg; mientras no exista,
+// la burbuja muestra las iniciales.
+const ceo = {
+  name: "Jacob Meléndez",
+  role: "CEO y fundador",
+  photo: "/fotos/ceo.jpg",
+}
+
 const mapQuery = encodeURIComponent(contact.address)
 const phoneHref = `tel:${contact.phone.replace(/\s/g, "")}`
 const whatsappHref = contact.socials.find(
   (social) => social.icon === "whatsapp"
 )!.href
-// "Solicita información": abre un correo con el asunto ya escrito.
-const infoHref = `mailto:${contact.email}?subject=${encodeURIComponent("Información sobre los cursos")}`
 
 function SocialIcon({
   name,
@@ -582,46 +675,80 @@ function CourseCard({
   className?: string
 }) {
   const { intro, lessons, note } = courseDetails[course.id]
+  const Icon = course.icon
   const NoteIcon = note.kind === "safety" ? ShieldAlert : Lightbulb
   const headingClass = "text-foreground"
 
   return (
     <div
       className={cn(
-        "max-w-3xl rounded-2xl border bg-card p-6 text-muted-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 sm:p-8 dark:ring-white/5",
+        "max-w-3xl overflow-hidden rounded-2xl border bg-card text-muted-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 dark:ring-white/5",
         className
       )}
     >
-      <h3 className={cn("text-xl font-semibold", headingClass)}>
-        ¿De qué trata el curso?
-      </h3>
-      <p className="mt-2 text-pretty [&_strong]:text-foreground">{intro}</p>
-
-      <h4 className={cn("mt-6 font-semibold", headingClass)}>Qué aprenderás</h4>
-      <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-        {lessons.map((lesson) => (
-          <li key={lesson.title} className="flex gap-2.5 text-sm">
-            <CircleCheck
-              className="mt-0.5 size-4 shrink-0 text-blue-600"
-              aria-hidden
-            />
-            <span>
-              <strong className={headingClass}>{lesson.title}</strong>{" "}
-              {lesson.text}
+      <div className="group relative aspect-[16/8] overflow-hidden sm:aspect-[16/7]">
+        <Image
+          src={course.photo}
+          alt={course.alt}
+          fill
+          sizes="(min-width: 768px) 48rem, 100vw"
+          className="object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 text-xs font-medium text-white sm:bottom-5 sm:left-6">
+          {[
+            { icon: Icon, text: `${lessons.length} habilidades` },
+            { icon: Users, text: "Grupo reducido" },
+            { icon: Wrench, text: "100 % práctico", desktopOnly: true },
+          ].map(({ icon: ChipIcon, text, desktopOnly }) => (
+            <span
+              key={text}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/30 px-3 py-1.5 backdrop-blur-md",
+                desktopOnly && "max-sm:hidden"
+              )}
+            >
+              <ChipIcon className="size-3.5" aria-hidden />
+              {text}
             </span>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      </div>
 
-      <p className="mt-6 flex gap-2.5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900">
-        <NoteIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <span>
-          <strong>{note.title}</strong> {note.text}
-        </span>
-      </p>
+      <div className="p-6 sm:p-8">
+        <h3 className={cn("text-xl font-semibold", headingClass)}>
+          ¿De qué trata el curso?
+        </h3>
+        <p className="mt-2 text-pretty [&_strong]:text-foreground">{intro}</p>
 
-      <div className="mt-6">
-        <EnrollDialog course={course.label} />
+        <h4 className={cn("mt-6 font-semibold", headingClass)}>
+          Qué aprenderás
+        </h4>
+        <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+          {lessons.map((lesson) => (
+            <li key={lesson.title} className="flex gap-2.5 text-sm">
+              <CircleCheck
+                className="mt-0.5 size-4 shrink-0 text-blue-600"
+                aria-hidden
+              />
+              <span>
+                <strong className={headingClass}>{lesson.title}</strong>{" "}
+                {lesson.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-6 flex gap-2.5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900">
+          <NoteIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            <strong>{note.title}</strong> {note.text}
+          </span>
+        </p>
+
+        <div className="mt-6">
+          <EnrollDialog course={course.label} />
+        </div>
       </div>
     </div>
   )
@@ -664,12 +791,10 @@ function InfoPanel() {
       </p>
 
       <div className="mt-6 grid gap-2.5">
-        <a
-          href={infoHref}
-          className="flex h-12 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700"
-        >
-          Solicita información
-        </a>
+        <EnrollDialog
+          variant="info"
+          triggerClassName="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700"
+        />
         <a
           href={`#${courses[0].id}`}
           className="flex h-12 items-center justify-center gap-2 rounded-full border border-blue-600 text-sm font-semibold tracking-wide text-blue-700 uppercase transition-colors hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950"
@@ -709,16 +834,52 @@ function InfoPanel() {
   )
 }
 
+// Burbuja del CEO: foto redonda con un borde degradado (azul → ámbar, los colores de la marca).
+function CeoBubble() {
+  // Se comprueba en cada render para que la foto aparezca en cuanto se añada.
+  const ceoHasPhoto = existsSync(join(process.cwd(), "public", ceo.photo))
+  return (
+    <figure className="flex items-center gap-4 rounded-full border bg-card py-2 pr-6 pl-2 text-card-foreground shadow-xl ring-1 shadow-black/5 ring-black/5 dark:ring-white/5">
+      <span className="relative shrink-0 rounded-full bg-linear-to-br from-blue-600 via-blue-400 to-amber-400 p-[3px] shadow-lg shadow-blue-600/20">
+        {ceoHasPhoto ? (
+          <Image
+            src={ceo.photo}
+            alt={`${ceo.name}, ${ceo.role} de DailySchool`}
+            width={128}
+            height={128}
+            className="size-16 rounded-full border-2 border-card object-cover object-top"
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="flex size-16 items-center justify-center rounded-full border-2 border-card bg-blue-700 text-lg font-semibold tracking-wide text-white"
+          >
+            {initials(ceo.name)}
+          </span>
+        )}
+      </span>
+      <figcaption>
+        <span className="block font-semibold tracking-tight">{ceo.name}</span>
+        <span className="block text-sm text-muted-foreground">
+          {ceo.role} de DailySchool
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
 export default function Page() {
   return (
     // Empieza en modo claro; el botón luna (ThemeToggle) cambia a oscuro.
     <div className="min-h-svh bg-background pb-17 text-foreground xl:pb-0">
       {/* Franja de promoción fija arriba (h-9). El menú va justo debajo (top-13 = 36 px + 16 px). */}
       <div className="fixed inset-x-0 top-0 z-50 bg-green-600 px-4 text-sm font-semibold text-white">
-        <div className="mx-auto flex h-9 max-w-6xl items-center justify-center sm:justify-between">
-          <span className="hidden w-72 sm:block" aria-hidden />
-          <p>50% de descuento</p>
-          <div className="hidden w-72 items-center justify-end gap-5 sm:flex">
+        <div className="mx-auto flex h-9 max-w-5xl items-center justify-center sm:justify-between">
+          <span className="hidden w-72 lg:block" aria-hidden />
+          <a href="#precios" className="whitespace-nowrap hover:underline">
+            50% de descuento · <span className="underline">Ver precios</span>
+          </a>
+          <div className="hidden items-center justify-end gap-5 sm:flex lg:w-72">
             <a
               href={whatsappHref}
               target="_blank"
@@ -740,11 +901,19 @@ export default function Page() {
       </div>
 
       <header className="fixed inset-x-0 top-13 z-50 px-4">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-full border border-white/30 bg-white/40 py-2 pr-3 pl-6 shadow-lg ring-1 shadow-black/5 ring-black/5 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:ring-white/5">
-          <a href="#inicio" className="font-semibold">
-            DailySchool
+        <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-white/30 bg-white/40 py-2 pr-2 pl-4 shadow-lg ring-1 shadow-black/5 ring-black/5 backdrop-blur-xl backdrop-saturate-150 sm:gap-4 sm:pr-3 sm:pl-6 dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:ring-white/5">
+          <a
+            href="#inicio"
+            aria-label="DailySchool, ir al inicio"
+            className="shrink-0"
+          >
+            {/* En pantallas muy estrechas solo se ve el símbolo. */}
+            <Logo
+              markClassName="size-7 sm:size-8"
+              wordmarkClassName="max-[359px]:hidden"
+            />
           </a>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center sm:gap-1">
             <CoursesMenu>
               <ul className="grid gap-0.5">
                 {courses.map(({ id, label, icon: Icon }) => (
@@ -764,18 +933,22 @@ export default function Page() {
               </ul>
             </CoursesMenu>
             <a
+              href="#precios"
+              className="rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground max-md:hidden"
+            >
+              Precios
+            </a>
+            <a
               href="#contacto"
-              className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full px-2 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground max-sm:hidden sm:px-3"
             >
               Sobre nosotros
             </a>
             <ThemeToggle />
-            <a
-              href={infoHref}
-              className="ml-1 hidden h-9 items-center rounded-full bg-blue-600 px-4 text-xs font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700 sm:inline-flex"
-            >
-              Solicita información
-            </a>
+            <EnrollDialog
+              variant="info"
+              triggerClassName="ml-1 hidden h-9 cursor-pointer items-center rounded-full bg-blue-600 px-4 text-xs font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700 sm:inline-flex"
+            />
           </div>
         </nav>
       </header>
@@ -786,18 +959,18 @@ export default function Page() {
         {/* 1. Inicio */}
         <section
           id="inicio"
-          className="scroll-mt-32 overflow-hidden px-6 pt-36 pb-20 sm:pt-40 sm:pb-24"
+          className="scroll-mt-32 overflow-hidden px-4 pt-32 pb-14 sm:pt-40 sm:pb-24"
         >
-          {/* Portada: foto a todo el ancho con un recuadro azul encima, a la izquierda. */}
-          <div className="relative mx-auto max-w-6xl">
-            <div className="relative flex min-h-[34rem] items-end overflow-hidden rounded-3xl p-4 sm:min-h-[38rem] sm:items-center sm:p-10">
-              <Image
-                src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e"
-                alt="Persona con casco revisando una instalación eléctrica en la pared"
-                fill
-                priority
-                sizes="(min-width: 1280px) 70vw, 100vw"
-                className="object-cover object-[75%_center]"
+          {/* Portada: pase de fotos de los cursos con un recuadro azul encima, a la izquierda. */}
+          <div className="relative mx-auto max-w-5xl">
+            <div className="relative flex min-h-[42rem] items-end overflow-hidden rounded-3xl p-4 sm:min-h-[38rem] sm:items-center sm:p-10">
+              <HeroSlideshow
+                slides={courses.map(({ id, photo, alt, label }) => ({
+                  src: photo,
+                  alt,
+                  label,
+                  href: `#${id}`,
+                }))}
               />
               <Reveal
                 from="left"
@@ -806,7 +979,7 @@ export default function Page() {
                 <p className="text-xs font-medium tracking-widest text-white/75 uppercase">
                   Habilidades funcionales
                 </p>
-                <h1 className="mt-3 text-4xl leading-tight font-medium tracking-tight text-balance sm:text-5xl">
+                <h1 className="mt-3 text-[2rem] leading-tight font-medium tracking-tight text-balance sm:text-5xl sm:leading-tight">
                   Lo que siempre necesitaste saber y nadie te enseñó
                 </h1>
                 <p className="mt-4 text-lg font-semibold sm:text-xl">
@@ -847,7 +1020,7 @@ export default function Page() {
           {/* ¡Solo en DailySchool!: tres ventajas en una franja. */}
           <Reveal
             from="up"
-            className="mx-auto mt-14 grid max-w-6xl items-center gap-6 rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8 lg:grid-cols-[auto_1fr]"
+            className="mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8 lg:grid-cols-[auto_1fr]"
           >
             <p className="text-2xl font-semibold tracking-tight text-blue-700 lg:pr-8 dark:text-blue-300">
               ¡Solo en
@@ -941,8 +1114,44 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Vídeo de presentación (public/video). */}
+        <section id="video" className="scroll-mt-32 px-4 pb-14 sm:pb-20">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <Reveal from="left" className="max-w-xl">
+                <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                  En 10 segundos
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                  Así se aprende en DailySchool
+                </h2>
+                <p className="mt-3 text-pretty text-muted-foreground">
+                  Nada de teoría eterna: herramientas en la mano desde el primer
+                  minuto y un instructor a tu lado.
+                </p>
+              </Reveal>
+              <Reveal from="right" delay={150} className="shrink-0">
+                <a
+                  href="#cursos"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                >
+                  Ver todos los cursos
+                  <ArrowRight className="size-4" aria-hidden />
+                </a>
+              </Reveal>
+            </div>
+            <Reveal from="up" delay={100} className="mt-8">
+              <PromoVideo
+                src="/video/presentacion.mp4"
+                poster="/video/presentacion-poster.jpg"
+                label="Vídeo de presentación de DailySchool: alumnos usando un taladro, cocinando, estudiando y colgando una estantería"
+              />
+            </Reveal>
+          </div>
+        </section>
+
         {/* Cifras */}
-        <div className="px-6 pb-20">
+        <div className="px-4 pb-14 sm:pb-20">
           <div className="mx-auto max-w-5xl rounded-2xl border bg-card p-4 text-card-foreground shadow-lg shadow-black/5 sm:p-6">
             <div className="mx-auto max-w-2xl px-2 pt-4 pb-8 text-center">
               <Reveal from="left">
@@ -985,8 +1194,8 @@ export default function Page() {
         </div>
 
         {/* Catálogo: una tarjeta por curso que lleva a su sección. */}
-        <section id="cursos" className="scroll-mt-32 px-6 pb-20">
-          <div className="mx-auto max-w-6xl">
+        <section id="cursos" className="scroll-mt-32 px-4 pb-6 sm:pb-20">
+          <div className="mx-auto max-w-5xl">
             <Reveal from="left" className="max-w-2xl">
               <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
                 Conoce nuestros cursos
@@ -996,340 +1205,502 @@ export default function Page() {
                 es un taller práctico con un instructor y grupos reducidos.
               </p>
             </Reveal>
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {courses.map(({ id, label, icon: Icon }, index) => (
-                <Reveal
-                  as="li"
-                  key={id}
-                  from={index % 2 === 0 ? "left" : "right"}
-                  delay={index * 60}
-                >
-                  <a
-                    href={`#${id}`}
-                    className="group flex h-full flex-col rounded-2xl border bg-card p-5 text-card-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-600/40 hover:shadow-md"
+            {/* Mosaico: el primer curso ocupa un bloque grande y el resto rellena la cuadrícula
+                (en escritorio, 4 columnas × 3 filas sin huecos; en móvil, 2 columnas). */}
+            <ul className="mt-8 grid auto-rows-[11rem] grid-cols-2 gap-3 sm:auto-rows-[13rem] sm:gap-4 lg:grid-cols-4">
+              {courses.map(({ id, label, icon: Icon, photo }, index) => {
+                const featured = index === 0
+                return (
+                  <Reveal
+                    as="li"
+                    key={id}
+                    from={index % 2 === 0 ? "left" : "right"}
+                    delay={index * 60}
+                    className={cn(
+                      featured && "col-span-2 row-span-2",
+                      index >= courses.length - 2 && "lg:col-span-2"
+                    )}
                   >
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-blue-600 text-white">
-                      <Icon className="size-5" aria-hidden />
-                    </span>
-                    <span className="mt-4 font-semibold">{label}</span>
-                    <span className="mt-1 text-sm text-muted-foreground">
-                      {courseDetails[id].lessons.length} habilidades prácticas
-                    </span>
-                    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-blue-700 dark:text-blue-300">
-                      Ver curso
-                      <ArrowRight
-                        className="size-4 transition-transform group-hover:translate-x-0.5"
-                        aria-hidden
+                    <a
+                      href={`#${id}`}
+                      className="group relative flex h-full flex-col justify-end overflow-hidden rounded-2xl bg-muted p-4 text-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-xl sm:p-5"
+                    >
+                      <Image
+                        src={photo}
+                        alt=""
+                        fill
+                        sizes={
+                          featured
+                            ? "(min-width: 1024px) 32rem, 100vw"
+                            : "(min-width: 1024px) 32rem, 50vw"
+                        }
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
-                    </span>
-                  </a>
-                </Reveal>
-              ))}
+                      <span className="absolute inset-0 bg-linear-to-t from-black/80 via-black/25 to-transparent" />
+                      <span className="absolute top-3 left-3 flex size-9 items-center justify-center rounded-xl bg-white/90 text-blue-700 shadow-sm backdrop-blur sm:top-4 sm:left-4 sm:size-10">
+                        <Icon className="size-5" aria-hidden />
+                      </span>
+                      <span className="relative">
+                        <span
+                          className={cn(
+                            "block font-semibold text-balance",
+                            featured
+                              ? "text-xl sm:text-3xl"
+                              : "text-sm sm:text-lg"
+                          )}
+                        >
+                          {label}
+                        </span>
+                        <span className="mt-1 flex items-center justify-between gap-2 text-xs text-white/80 sm:text-sm">
+                          <span>
+                            {courseDetails[id].lessons.length} habilidades
+                            <span className="max-sm:hidden"> prácticas</span>
+                          </span>
+                          <ArrowRight
+                            className="size-4 shrink-0 transition-transform group-hover:translate-x-1"
+                            aria-hidden
+                          />
+                        </span>
+                        {featured && (
+                          <span className="mt-4 hidden max-w-md text-sm text-pretty text-white/85 sm:block">
+                            El curso más pedido: en una tarde aprendes a cambiar
+                            un enchufe con seguridad.
+                          </span>
+                        )}
+                      </span>
+                    </a>
+                  </Reveal>
+                )
+              })}
+            </ul>
+          </div>
+        </section>
+
+        {/* Precios: tres planes; el del centro, destacado. */}
+        <section
+          id="precios"
+          className="scroll-mt-32 px-4 pt-8 pb-14 sm:pt-14 sm:pb-20"
+        >
+          <div className="mx-auto max-w-5xl">
+            <Reveal from="up" className="mx-auto max-w-2xl text-center">
+              <p className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold tracking-wide text-blue-950 uppercase">
+                <Zap className="size-3.5" aria-hidden />
+                <span className="max-sm:hidden">
+                  Oferta de lanzamiento ·
+                </span>{" "}
+                {discount * 100} % de descuento
+              </p>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                Elige cómo quieres empezar
+              </h2>
+              <p className="mt-3 text-pretty text-muted-foreground">
+                Pago único, sin cuotas ni matrícula. Todo el material va
+                incluido: solo tienes que venir con ganas.
+              </p>
+            </Reveal>
+
+            <ul className="mt-10 grid items-stretch gap-4 md:grid-cols-3 md:gap-5">
+              {plans.map((plan, index) => {
+                const finalPrice = plan.price * (1 - discount)
+                const perCourse = finalPrice / plan.courses
+                return (
+                  <Reveal
+                    as="li"
+                    key={plan.name}
+                    from={index === 0 ? "left" : index === 2 ? "right" : "up"}
+                    delay={index * 100}
+                    className={cn(
+                      "relative flex flex-col rounded-3xl border p-6 shadow-sm sm:p-7",
+                      plan.featured
+                        ? "border-blue-700 bg-blue-700 text-white shadow-2xl shadow-blue-700/25 md:-my-3 md:py-10"
+                        : "bg-card text-card-foreground"
+                    )}
+                  >
+                    {plan.featured && (
+                      <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3.5 py-1 text-xs font-semibold whitespace-nowrap text-blue-950 shadow-md">
+                        El más elegido
+                      </span>
+                    )}
+                    <h3 className="text-lg font-semibold">{plan.name}</h3>
+                    <p
+                      className={cn(
+                        "mt-1 text-sm",
+                        plan.featured
+                          ? "text-white/80"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {plan.description}
+                    </p>
+
+                    <p className="mt-6 flex items-baseline gap-2">
+                      <span className="text-5xl font-bold tracking-tight tabular-nums">
+                        {euros(finalPrice)}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-lg line-through",
+                          plan.featured
+                            ? "text-white/60"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        <span className="sr-only">Antes </span>
+                        {euros(plan.price)}
+                      </span>
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 text-sm",
+                        plan.featured
+                          ? "text-white/80"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {plan.courses > 1
+                        ? `${euros(perCourse)} por curso · ahorras ${euros(plan.price - finalPrice)}`
+                        : `Ahorras ${euros(plan.price - finalPrice)}`}
+                    </p>
+
+                    <ul className="mt-6 grid gap-2.5 text-sm">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex gap-2.5">
+                          <CircleCheck
+                            className={cn(
+                              "mt-0.5 size-4 shrink-0",
+                              plan.featured ? "text-amber-300" : "text-blue-600"
+                            )}
+                            aria-hidden
+                          />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-auto pt-8">
+                      <EnrollDialog
+                        course={plan.name}
+                        className={cn(
+                          "w-full",
+                          plan.featured &&
+                            "bg-white text-blue-700 hover:bg-blue-50"
+                        )}
+                      />
+                    </div>
+                  </Reveal>
+                )
+              })}
             </ul>
           </div>
         </section>
 
         {/* Desde el primer curso hasta el final: contenido a la izquierda y, en pantallas
               grandes, el panel de información a la derecha, fijo al hacer scroll. */}
-        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="min-w-0">
-            {/* 2–8. Cursos: alternan izquierda y derecha. */}
-            {courses.map((course, index) => {
-              const right = index % 2 === 1
-              return (
-                <section
-                  key={course.id}
-                  id={course.id}
-                  className="scroll-mt-32 px-6 py-20"
-                >
-                  <div
-                    className={cn(
-                      "mx-auto flex max-w-6xl flex-col items-start gap-8",
-                      right && "items-end"
-                    )}
+        <div className="px-4">
+          <div className="mx-auto max-w-5xl xl:grid xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-10">
+            <div className="min-w-0">
+              {/* 2–8. Cursos: alternan izquierda y derecha. */}
+              {courses.map((course, index) => {
+                const right = index % 2 === 1
+                return (
+                  <section
+                    key={course.id}
+                    id={course.id}
+                    className="scroll-mt-32 py-12 sm:py-20"
                   >
-                    <Reveal from={right ? "right" : "left"}>
-                      <CourseHeading course={course} />
+                    <div
+                      className={cn(
+                        "flex flex-col items-start gap-8",
+                        right && "items-end"
+                      )}
+                    >
+                      <Reveal from={right ? "right" : "left"}>
+                        <CourseHeading course={course} />
+                      </Reveal>
+                      <Reveal
+                        from={right ? "right" : "left"}
+                        delay={150}
+                        className="w-full max-w-3xl"
+                      >
+                        <CourseCard course={course} className="w-full" />
+                      </Reveal>
+                    </div>
+                  </section>
+                )
+              })}
+
+              {/* Opiniones */}
+              <section
+                id="opiniones"
+                className="scroll-mt-32 overflow-hidden py-12 sm:py-20"
+              >
+                <div>
+                  <div className="mb-10 flex flex-col items-center text-center">
+                    <Reveal from="left">
+                      <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                        Opiniones
+                      </p>
+                      <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                        Lo que cuentan nuestros alumnos
+                      </h2>
                     </Reveal>
                     <Reveal
-                      from={right ? "right" : "left"}
+                      from="right"
                       delay={150}
-                      className="w-full max-w-3xl"
+                      className="mt-4 flex items-center gap-2"
                     >
-                      <CourseCard course={course} className="w-full" />
+                      <Stars
+                        rating={averageRating}
+                        className="[&_svg]:size-5"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">
+                          {averageRating.toLocaleString("es-ES")}
+                        </span>{" "}
+                        de valoración media
+                      </span>
                     </Reveal>
                   </div>
-                </section>
-              )
-            })}
 
-            {/* Opiniones */}
-            <section
-              id="opiniones"
-              className="scroll-mt-32 overflow-hidden px-6 py-20"
-            >
-              <div className="mx-auto max-w-6xl">
-                <div className="mb-10 flex flex-col items-center text-center">
+                  {/* Las tarjetas entran desde abajo: un desplazamiento horizontal movería el punto de
+                    anclaje (scroll-snap) y el carrusel arrancaría desplazado. */}
+                  <ReviewsCarousel>
+                    {reviews.map((review, index) => {
+                      const course = courses.find(
+                        (c) => c.id === review.courseId
+                      )!
+                      return (
+                        <Reveal
+                          as="li"
+                          from="up"
+                          delay={index * 100}
+                          key={review.name}
+                          // Anchos exactos para que siempre se vean tarjetas completas: 1 en móvil, 2 en tablet y 3 en escritorio (gap-4 = 1rem).
+                          className="flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)] xl:w-[calc((100%-1rem)/2)]"
+                        >
+                          <Stars rating={review.rating} />
+                          <blockquote className="mt-4 flex-1 text-pretty">
+                            “{review.text}”
+                          </blockquote>
+                          <div className="mt-6 flex items-center gap-3">
+                            {review.photo ? (
+                              <Image
+                                src={review.photo}
+                                alt={review.name}
+                                width={48}
+                                height={48}
+                                className="size-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span
+                                aria-hidden
+                                className="flex size-12 items-center justify-center rounded-full bg-blue-600 font-semibold text-white"
+                              >
+                                {initials(review.name)}
+                              </span>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium">{review.name}</p>
+                              <a
+                                href={`#${course.id}`}
+                                className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+                              >
+                                Curso: {course.label}
+                              </a>
+                            </div>
+                          </div>
+                        </Reveal>
+                      )
+                    })}
+                  </ReviewsCarousel>
+                </div>
+              </section>
+
+              {/* Preguntas frecuentes: desplegables nativos (<details>), funcionan sin JavaScript. */}
+              <section id="preguntas" className="scroll-mt-32 py-12 sm:py-20">
+                <div className="mx-auto max-w-3xl">
                   <Reveal from="left">
                     <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                      Opiniones
+                      Dudas
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                      Lo que cuentan nuestros alumnos
+                      Preguntas frecuentes
                     </h2>
                   </Reveal>
+                  <div className="mt-8 grid gap-3">
+                    {faqs.map((faq, index) => (
+                      <Reveal
+                        key={faq.question}
+                        from={index % 2 === 0 ? "left" : "right"}
+                        delay={index * 80}
+                      >
+                        <details className="group rounded-2xl border bg-card text-card-foreground shadow-sm open:shadow-md">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium [&::-webkit-details-marker]:hidden">
+                            {faq.question}
+                            <Plus
+                              className="size-5 shrink-0 text-blue-600 transition-transform group-open:rotate-45"
+                              aria-hidden
+                            />
+                          </summary>
+                          <p className="px-5 pb-5 text-pretty text-muted-foreground">
+                            {faq.answer}
+                          </p>
+                        </details>
+                      </Reveal>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Contacto */}
+              <section id="contacto" className="scroll-mt-32 py-12 sm:py-20">
+                <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-1">
+                  <Reveal from="left">
+                    <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                      Contacto
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                      Ven a conocernos
+                    </h2>
+                    <p className="mt-2 font-medium">{contact.name}</p>
+                    <p className="mt-3 text-pretty text-muted-foreground">
+                      {contact.about}
+                    </p>
+
+                    <dl className="mt-8 grid gap-5 sm:grid-cols-2">
+                      <div className="flex gap-3">
+                        <MapPin
+                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          aria-hidden
+                        />
+                        <div>
+                          <dt className="font-medium">Dirección</dt>
+                          <dd className="text-sm text-muted-foreground">
+                            {contact.address}
+                            <br />
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${mapQuery}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground underline-offset-4 hover:underline"
+                            >
+                              Cómo llegar
+                            </a>
+                          </dd>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Clock
+                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          aria-hidden
+                        />
+                        <div>
+                          <dt className="font-medium">Horario</dt>
+                          {contact.hours.map((line) => (
+                            <dd
+                              key={line}
+                              className="text-sm text-muted-foreground"
+                            >
+                              {line}
+                            </dd>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Phone
+                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          aria-hidden
+                        />
+                        <div>
+                          <dt className="font-medium">Teléfono</dt>
+                          <dd className="text-sm text-muted-foreground">
+                            <a
+                              href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                              className="hover:text-foreground"
+                            >
+                              {contact.phone}
+                            </a>
+                          </dd>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Mail
+                          className="mt-0.5 size-5 shrink-0 text-blue-600"
+                          aria-hidden
+                        />
+                        <div>
+                          <dt className="font-medium">Correo electrónico</dt>
+                          <dd className="text-sm text-muted-foreground">
+                            <a
+                              href={`mailto:${contact.email}`}
+                              className="hover:text-foreground"
+                            >
+                              {contact.email}
+                            </a>
+                          </dd>
+                        </div>
+                      </div>
+                    </dl>
+
+                    <div className="mt-8">
+                      <p className="font-medium">Síguenos</p>
+                      <ul className="mt-3 flex gap-2">
+                        {contact.socials.map((social) => (
+                          <li key={social.label}>
+                            <a
+                              href={social.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={social.label}
+                              className={cn(
+                                buttonVariants({
+                                  variant: "outline",
+                                  size: "icon-lg",
+                                }),
+                                "size-11 rounded-full"
+                              )}
+                            >
+                              <SocialIcon name={social.icon} />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Reveal>
+
                   <Reveal
                     from="right"
                     delay={150}
-                    className="mt-4 flex items-center gap-2"
+                    className="min-h-80 overflow-hidden rounded-2xl border bg-card shadow-sm"
                   >
-                    <Stars rating={averageRating} className="[&_svg]:size-5" />
-                    <span className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
-                        {averageRating.toLocaleString("es-ES")}
-                      </span>{" "}
-                      de valoración media
-                    </span>
+                    <iframe
+                      title={`Mapa: ${contact.address}`}
+                      src={`https://maps.google.com/maps?q=${mapQuery}&z=16&output=embed`}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="size-full min-h-80 border-0"
+                    />
                   </Reveal>
                 </div>
+              </section>
+            </div>
 
-                {/* Las tarjetas entran de derecha a izquierda, hacia donde avanza el carrusel. */}
-                <ReviewsCarousel>
-                  {reviews.map((review, index) => {
-                    const course = courses.find(
-                      (c) => c.id === review.courseId
-                    )!
-                    return (
-                      <Reveal
-                        as="li"
-                        from="right"
-                        delay={index * 100}
-                        key={review.name}
-                        // Anchos exactos para que siempre se vean tarjetas completas: 1 en móvil, 2 en tablet y 3 en escritorio (gap-4 = 1rem).
-                        className="flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)]"
-                      >
-                        <Stars rating={review.rating} />
-                        <blockquote className="mt-4 flex-1 text-pretty">
-                          “{review.text}”
-                        </blockquote>
-                        <div className="mt-6 flex items-center gap-3">
-                          {review.photo ? (
-                            <Image
-                              src={review.photo}
-                              alt={review.name}
-                              width={48}
-                              height={48}
-                              className="size-12 rounded-full object-cover"
-                            />
-                          ) : (
-                            <span
-                              aria-hidden
-                              className="flex size-12 items-center justify-center rounded-full bg-blue-600 font-semibold text-white"
-                            >
-                              {initials(review.name)}
-                            </span>
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-medium">{review.name}</p>
-                            <a
-                              href={`#${course.id}`}
-                              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-                            >
-                              Curso: {course.label}
-                            </a>
-                          </div>
-                        </div>
-                      </Reveal>
-                    )
-                  })}
-                </ReviewsCarousel>
-              </div>
-            </section>
-
-            {/* Preguntas frecuentes: desplegables nativos (<details>), funcionan sin JavaScript. */}
-            <section id="preguntas" className="scroll-mt-32 px-6 py-20">
-              <div className="mx-auto max-w-3xl">
-                <Reveal from="left">
-                  <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                    Dudas
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                    Preguntas frecuentes
-                  </h2>
-                </Reveal>
-                <div className="mt-8 grid gap-3">
-                  {faqs.map((faq, index) => (
-                    <Reveal
-                      key={faq.question}
-                      from={index % 2 === 0 ? "left" : "right"}
-                      delay={index * 80}
-                    >
-                      <details className="group rounded-2xl border bg-card text-card-foreground shadow-sm open:shadow-md">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium [&::-webkit-details-marker]:hidden">
-                          {faq.question}
-                          <Plus
-                            className="size-5 shrink-0 text-blue-600 transition-transform group-open:rotate-45"
-                            aria-hidden
-                          />
-                        </summary>
-                        <p className="px-5 pb-5 text-pretty text-muted-foreground">
-                          {faq.answer}
-                        </p>
-                      </details>
-                    </Reveal>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Contacto */}
-            <section id="contacto" className="scroll-mt-32 px-6 py-20">
-              <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2">
-                <Reveal from="left">
-                  <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                    Contacto
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                    Ven a conocernos
-                  </h2>
-                  <p className="mt-2 font-medium">{contact.name}</p>
-                  <p className="mt-3 text-pretty text-muted-foreground">
-                    {contact.about}
-                  </p>
-
-                  <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-                    <div className="flex gap-3">
-                      <MapPin
-                        className="mt-0.5 size-5 shrink-0 text-blue-600"
-                        aria-hidden
-                      />
-                      <div>
-                        <dt className="font-medium">Dirección</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          {contact.address}
-                          <br />
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${mapQuery}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground underline-offset-4 hover:underline"
-                          >
-                            Cómo llegar
-                          </a>
-                        </dd>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Clock
-                        className="mt-0.5 size-5 shrink-0 text-blue-600"
-                        aria-hidden
-                      />
-                      <div>
-                        <dt className="font-medium">Horario</dt>
-                        {contact.hours.map((line) => (
-                          <dd
-                            key={line}
-                            className="text-sm text-muted-foreground"
-                          >
-                            {line}
-                          </dd>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Phone
-                        className="mt-0.5 size-5 shrink-0 text-blue-600"
-                        aria-hidden
-                      />
-                      <div>
-                        <dt className="font-medium">Teléfono</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          <a
-                            href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                            className="hover:text-foreground"
-                          >
-                            {contact.phone}
-                          </a>
-                        </dd>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Mail
-                        className="mt-0.5 size-5 shrink-0 text-blue-600"
-                        aria-hidden
-                      />
-                      <div>
-                        <dt className="font-medium">Correo electrónico</dt>
-                        <dd className="text-sm text-muted-foreground">
-                          <a
-                            href={`mailto:${contact.email}`}
-                            className="hover:text-foreground"
-                          >
-                            {contact.email}
-                          </a>
-                        </dd>
-                      </div>
-                    </div>
-                  </dl>
-
-                  <div className="mt-8">
-                    <p className="font-medium">Síguenos</p>
-                    <ul className="mt-3 flex gap-2">
-                      {contact.socials.map((social) => (
-                        <li key={social.label}>
-                          <a
-                            href={social.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={social.label}
-                            className={cn(
-                              buttonVariants({
-                                variant: "outline",
-                                size: "icon-lg",
-                              }),
-                              "size-11 rounded-full"
-                            )}
-                          >
-                            <SocialIcon name={social.icon} />
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </Reveal>
-
-                <Reveal
-                  from="right"
-                  delay={150}
-                  className="min-h-80 overflow-hidden rounded-2xl border bg-card shadow-sm"
-                >
-                  <iframe
-                    title={`Mapa: ${contact.address}`}
-                    src={`https://maps.google.com/maps?q=${mapQuery}&z=16&output=embed`}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    className="size-full min-h-80 border-0"
-                  />
-                </Reveal>
-              </div>
-            </section>
+            <aside className="pb-20 xl:pt-20">
+              <Reveal
+                from="right"
+                className="mx-auto max-w-md xl:sticky xl:top-32"
+              >
+                <InfoPanel />
+              </Reveal>
+            </aside>
           </div>
-
-          <aside className="px-6 pb-20 xl:pt-20 xl:pr-6 xl:pl-0">
-            <Reveal
-              from="right"
-              className="mx-auto max-w-md xl:sticky xl:top-32"
-            >
-              <InfoPanel />
-            </Reveal>
-          </aside>
         </div>
       </main>
 
-      <footer className="border-t bg-muted/40 px-6 py-12">
-        <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-[2fr_1fr_1fr]">
+      <footer className="border-t bg-muted/40 px-4 py-12">
+        <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-[2fr_1fr_1fr]">
           <div>
-            <p className="text-lg font-semibold">DailySchool</p>
+            <Logo className="text-lg" markClassName="size-9" />
             <p className="mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
               Cursos breves, prácticos y presenciales para aprender lo que
               siempre necesitaste saber.
@@ -1344,6 +1715,12 @@ export default function Page() {
               className="text-muted-foreground hover:text-foreground"
             >
               Cursos
+            </a>
+            <a
+              href="#precios"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Precios
             </a>
             <a
               href="#preguntas"
@@ -1374,19 +1751,20 @@ export default function Page() {
             <p className="text-muted-foreground">{contact.address}</p>
           </div>
         </div>
-        <p className="mx-auto mt-10 max-w-6xl border-t pt-6 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} DailySchool · Escuela día a día
-        </p>
+        <div className="mx-auto mt-10 flex max-w-5xl flex-col-reverse items-start gap-6 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} DailySchool · Escuela día a día
+          </p>
+          <CeoBubble />
+        </div>
       </footer>
 
       {/* Barra fija abajo en móvil y tablet (en escritorio ya está el panel lateral). */}
       <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t bg-background/90 p-3 backdrop-blur-xl xl:hidden">
-        <a
-          href={infoHref}
-          className="flex h-11 flex-1 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase"
-        >
-          Solicita información
-        </a>
+        <EnrollDialog
+          variant="info"
+          triggerClassName="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase"
+        />
         <a
           href={phoneHref}
           aria-label={`Llamar al ${contact.phone}`}

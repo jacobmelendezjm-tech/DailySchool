@@ -10,7 +10,36 @@ import { cn } from "@/lib/utils"
 const inputClass =
   "h-11 w-full rounded-xl border bg-background px-3.5 text-sm outline-none transition-colors focus-visible:border-blue-600 focus-visible:ring-3 focus-visible:ring-blue-600/20 aria-invalid:border-destructive"
 
-export function EnrollDialog({ course, className }: { course: string; className?: string }) {
+// "enroll": inscripción en un curso concreto. "info": solicitud de información general.
+type Variant = "enroll" | "info"
+
+const copy = {
+  enroll: {
+    trigger: "Inscribirme",
+    kicker: "Inscripción",
+    description: "Déjanos tus datos y te contactaremos para confirmar tu plaza.",
+    submit: "Enviar inscripción",
+  },
+  info: {
+    trigger: "Solicita información",
+    kicker: "Información",
+    description: "Déjanos tus datos y te contactaremos para resolver tus dudas sobre los cursos.",
+    submit: "Enviar solicitud",
+  },
+} satisfies Record<Variant, Record<string, string>>
+
+export function EnrollDialog({
+  course = "Información general",
+  variant = "enroll",
+  className,
+  triggerClassName,
+}: {
+  course?: string
+  variant?: Variant
+  className?: string
+  /** Sustituye por completo el estilo del botón que abre la ventana. */
+  triggerClassName?: string
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   // Cambiar la key reinicia el formulario la próxima vez que se abre tras una inscripción.
@@ -30,16 +59,22 @@ export function EnrollDialog({ course, className }: { course: string; className?
 
   return (
     <>
-      <Button
-        size="lg"
-        onClick={() => dialogRef.current?.showModal()}
-        className={cn(
-          "h-11 rounded-full bg-blue-600 px-6 text-base text-white hover:bg-blue-700 focus-visible:border-transparent focus-visible:ring-blue-600/40",
-          className
-        )}
-      >
-        Inscribirme
-      </Button>
+      {triggerClassName ? (
+        <button type="button" onClick={() => dialogRef.current?.showModal()} className={triggerClassName}>
+          {copy[variant].trigger}
+        </button>
+      ) : (
+        <Button
+          size="lg"
+          onClick={() => dialogRef.current?.showModal()}
+          className={cn(
+            "h-11 rounded-full bg-blue-600 px-6 text-base text-white hover:bg-blue-700 focus-visible:border-transparent focus-visible:ring-blue-600/40",
+            className
+          )}
+        >
+          {copy[variant].trigger}
+        </Button>
+      )}
 
       <dialog
         ref={dialogRef}
@@ -52,7 +87,7 @@ export function EnrollDialog({ course, className }: { course: string; className?
         data-lenis-prevent
         className="bubble-dialog m-auto max-h-[calc(100svh-2rem)] w-[min(34rem,calc(100%-2rem))] max-w-none overflow-y-auto overscroll-contain rounded-[2rem] border bg-card p-0 text-card-foreground shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
       >
-        <EnrollForm key={formKey} course={course} titleId={titleId} onClose={close} onSuccess={() => setSubmitted(true)} />
+        <EnrollForm key={formKey} course={course} variant={variant} titleId={titleId} onClose={close} onSuccess={() => setSubmitted(true)} />
       </dialog>
     </>
   )
@@ -60,11 +95,13 @@ export function EnrollDialog({ course, className }: { course: string; className?
 
 function EnrollForm({
   course,
+  variant,
   titleId,
   onClose,
   onSuccess,
 }: {
   course: string
+  variant: Variant
   titleId: string
   onClose: () => void
   onSuccess: () => void
@@ -96,8 +133,17 @@ function EnrollForm({
             ¡Gracias, {state.nombre}!
           </h2>
           <p className="mt-2 text-pretty text-muted-foreground">
-            Hemos recibido tu solicitud para <strong className="text-foreground">{course}</strong>. Te escribiremos a{" "}
-            <strong className="text-foreground">{state.email}</strong> para confirmar la fecha y tu plaza.
+            {variant === "info" ? (
+              <>
+                Hemos recibido tu solicitud. Te escribiremos a <strong className="text-foreground">{state.email}</strong>{" "}
+                para resolver tus dudas.
+              </>
+            ) : (
+              <>
+                Hemos recibido tu solicitud para <strong className="text-foreground">{course}</strong>. Te escribiremos a{" "}
+                <strong className="text-foreground">{state.email}</strong> para confirmar la fecha y tu plaza.
+              </>
+            )}
           </p>
           <Button size="lg" variant="outline" onClick={onClose} className="mt-6 h-11 rounded-full px-6">
             Cerrar
@@ -106,13 +152,11 @@ function EnrollForm({
       ) : (
         <form action={formAction} className="grid gap-4">
           <div className="pr-10">
-            <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Inscripción</p>
+            <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{copy[variant].kicker}</p>
             <h2 id={titleId} className="mt-1 text-xl font-semibold text-balance">
-              {course}
+              {variant === "info" ? "Solicita información" : course}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Déjanos tus datos y te contactaremos para confirmar tu plaza.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{copy[variant].description}</p>
           </div>
 
           <input type="hidden" name="curso" value={course} />
@@ -181,7 +225,9 @@ function EnrollForm({
                 defaultChecked={values.privacidad === "on"}
                 className="mt-0.5 size-4 shrink-0 accent-blue-600"
               />
-              Acepto que se usen mis datos para gestionar mi inscripción y contactarme sobre este curso.
+              {variant === "info"
+                ? "Acepto que se usen mis datos para contactarme sobre los cursos."
+                : "Acepto que se usen mis datos para gestionar mi inscripción y contactarme sobre este curso."}
             </label>
             {errors.privacidad && <p className="mt-1 text-sm text-destructive">{errors.privacidad}</p>}
           </div>
@@ -192,7 +238,7 @@ function EnrollForm({
             disabled={pending}
             className="mt-2 h-12 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700"
           >
-            {pending ? "Enviando…" : "Enviar inscripción"}
+            {pending ? "Enviando…" : copy[variant].submit}
           </Button>
         </form>
       )}
