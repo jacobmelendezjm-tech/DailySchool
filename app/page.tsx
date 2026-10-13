@@ -2,6 +2,7 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 import Image from "next/image"
 
+import { CoursesDropdown } from "@/components/courses-dropdown"
 import { CoursesMenu } from "@/components/courses-menu"
 import { EnrollDialog } from "@/components/enroll-dialog"
 import { Logo } from "@/components/logo"
@@ -13,7 +14,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
-  ArrowDown,
   ArrowRight,
   Bike,
   ChevronDown,
@@ -798,13 +798,24 @@ function InfoPanel() {
           variant="info"
           triggerClassName="flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-blue-700"
         />
-        <a
-          href={`#${courses[0].id}`}
-          className="flex h-12 items-center justify-center gap-2 rounded-full border border-blue-600 text-sm font-semibold tracking-wide text-blue-700 uppercase transition-colors hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950"
+        <CoursesDropdown
+          label="Ver los cursos"
+          className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-blue-600 text-sm font-semibold tracking-wide text-blue-700 uppercase transition-colors hover:bg-blue-50 aria-expanded:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950 dark:aria-expanded:bg-blue-950"
         >
-          Ver los cursos
-          <ArrowDown className="size-4" aria-hidden />
-        </a>
+          <ul className="grid gap-0.5">
+            {courses.map(({ id, label, icon: Icon }) => (
+              <li key={id}>
+                <a
+                  href={`#${id}`}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                >
+                  <Icon className="size-4 shrink-0 text-blue-500" aria-hidden />
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </CoursesDropdown>
       </div>
 
       <a
