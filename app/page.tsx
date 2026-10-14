@@ -826,27 +826,31 @@ function InfoPanel() {
         {contact.phone}
       </a>
 
-      <h3 className="mt-8 text-2xl font-medium tracking-tight">
-        Elige DailySchool
-      </h3>
-      <ul className="mt-4 grid gap-3 text-muted-foreground">
-        {[
-          "Cursos breves, prácticos y presenciales",
-          `${stats[0].value} alumnos formados`,
-          `${averageRating.toLocaleString("es-ES")}/5 de valoración media`,
-        ].map((item) => (
-          <li
-            key={item}
-            className="group flex gap-3 transition-colors hover:text-foreground"
-          >
-            <CircleCheck
-              className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
-              aria-hidden
-            />
-            {item}
-          </li>
-        ))}
-      </ul>
+      {/* En pantallas bajas (p. ej. portátiles de 768 px) se oculta esta parte para que
+          el panel fijo quepa entero sin cortarse por abajo. */}
+      <div className="lg:[@media(max-height:47rem)]:hidden">
+        <h3 className="mt-8 text-2xl font-medium tracking-tight">
+          Elige DailySchool
+        </h3>
+        <ul className="mt-4 grid gap-3 text-muted-foreground">
+          {[
+            "Cursos breves, prácticos y presenciales",
+            `${stats[0].value} alumnos formados`,
+            `${averageRating.toLocaleString("es-ES")}/5 de valoración media`,
+          ].map((item) => (
+            <li
+              key={item}
+              className="group flex gap-3 transition-colors hover:text-foreground"
+            >
+              <CircleCheck
+                className="mt-0.5 size-5 shrink-0 text-blue-600 transition-transform group-hover:scale-110"
+                aria-hidden
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }
@@ -888,7 +892,7 @@ function CeoBubble() {
 export default function Page() {
   return (
     // Empieza en modo claro; el botón luna (ThemeToggle) cambia a oscuro.
-    <div className="min-h-svh bg-background pb-17 text-foreground xl:pb-0">
+    <div className="min-h-svh bg-background pb-17 text-foreground lg:pb-0">
       {/* Franja de promoción fija arriba (h-9). El menú va justo debajo (top-13 = 36 px + 16 px). */}
       <div className="fixed inset-x-0 top-0 z-50 bg-green-600 px-4 text-sm font-semibold text-white">
         <div className="mx-auto flex h-9 max-w-5xl items-center justify-center sm:justify-between">
@@ -991,7 +995,7 @@ export default function Page() {
               />
               {/* Animación solo con CSS: aparece en cuanto se pinta la página,
                   sin esperar a que cargue el JavaScript (como haría <Reveal>). */}
-              <div className="hover-lift relative max-w-xl rounded-xl bg-blue-700/70 p-6 text-white shadow-2xl duration-700 ease-out animate-in fade-in slide-in-from-left-16 hover:bg-blue-700/80 motion-reduce:slide-in-from-left-0 sm:p-9">
+              <div className="hover-lift relative max-w-xl animate-in rounded-xl bg-blue-700/70 p-6 text-white shadow-2xl duration-700 ease-out fade-in slide-in-from-left-16 hover:bg-blue-700/80 motion-reduce:slide-in-from-left-0 sm:p-9">
                 <p className="text-xs font-medium tracking-widest text-white/75 uppercase">
                   Habilidades funcionales
                 </p>
@@ -1416,7 +1420,7 @@ export default function Page() {
         {/* Desde el primer curso hasta el final: contenido a la izquierda y, en pantallas
               grandes, el panel de información a la derecha, fijo al hacer scroll. */}
         <div className="px-4">
-          <div className="mx-auto max-w-5xl xl:grid xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-10">
+          <div className="mx-auto max-w-5xl lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-10">
             <div className="min-w-0">
               {/* 2–8. Cursos: alternan izquierda y derecha. */}
               {courses.map((course, index) => {
@@ -1494,8 +1498,8 @@ export default function Page() {
                           from="up"
                           delay={index * 100}
                           key={review.name}
-                          // Anchos exactos para que siempre se vean tarjetas completas: 1 en móvil, 2 en tablet y 3 en escritorio (gap-4 = 1rem).
-                          className="hover-lift flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm hover:border-blue-600/40 hover:shadow-md sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)] xl:w-[calc((100%-1rem)/2)]"
+                          // Anchos exactos para que siempre se vean tarjetas completas: 1 en móvil y 2 a partir de tablet (gap-4 = 1rem).
+                          className="hover-lift flex w-full shrink-0 snap-start flex-col rounded-2xl border bg-card p-6 text-card-foreground shadow-sm hover:border-blue-600/40 hover:shadow-md sm:w-[calc((100%-1rem)/2)]"
                         >
                           <Stars rating={review.rating} />
                           <blockquote className="mt-4 flex-1 text-pretty">
@@ -1573,7 +1577,7 @@ export default function Page() {
 
               {/* Contacto */}
               <section id="contacto" className="scroll-mt-32 py-12 sm:py-20">
-                <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-1">
+                <div className="grid gap-10">
                   <Reveal from="left">
                     <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                       Contacto
@@ -1704,10 +1708,10 @@ export default function Page() {
               </section>
             </div>
 
-            <aside className="pb-20 xl:pt-20">
+            <aside className="pb-20 lg:pt-20">
               <Reveal
                 from="right"
-                className="mx-auto max-w-md xl:sticky xl:top-32"
+                className="mx-auto max-w-md lg:sticky lg:top-32"
               >
                 <InfoPanel />
               </Reveal>
@@ -1779,7 +1783,7 @@ export default function Page() {
       </footer>
 
       {/* Barra fija abajo en móvil y tablet (en escritorio ya está el panel lateral). */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t bg-background/90 p-3 backdrop-blur-xl xl:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t bg-background/90 p-3 backdrop-blur-xl lg:hidden">
         <EnrollDialog
           variant="info"
           triggerClassName="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-sm font-semibold tracking-wide text-white uppercase"
