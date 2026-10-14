@@ -989,10 +989,9 @@ export default function Page() {
                   href: `#${id}`,
                 }))}
               />
-              <Reveal
-                from="left"
-                className="hover-lift relative max-w-xl rounded-xl bg-blue-700/70 p-6 text-white shadow-2xl hover:bg-blue-700/80 sm:p-9"
-              >
+              {/* Animación solo con CSS: aparece en cuanto se pinta la página,
+                  sin esperar a que cargue el JavaScript (como haría <Reveal>). */}
+              <div className="hover-lift relative max-w-xl rounded-xl bg-blue-700/70 p-6 text-white shadow-2xl duration-700 ease-out animate-in fade-in slide-in-from-left-16 hover:bg-blue-700/80 motion-reduce:slide-in-from-left-0 sm:p-9">
                 <p className="text-xs font-medium tracking-widest text-white/75 uppercase">
                   Habilidades funcionales
                 </p>
@@ -1025,7 +1024,7 @@ export default function Page() {
                     {stats[0].value} alumnos formados
                   </p>
                 </div>
-              </Reveal>
+              </div>
             </div>
             {/* Etiqueta en la esquina inferior derecha de la foto. */}
             <p className="absolute right-4 -bottom-5 flex items-center gap-2 bg-amber-400 px-4 py-2.5 text-sm font-semibold text-blue-900 shadow-lg transition duration-300 hover:scale-105 hover:-rotate-2 sm:right-8">
